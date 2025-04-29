@@ -5,9 +5,9 @@ const bcrypt = require("bcrypt");
 exports.viewProfile = async (req, res) => {
   try {
     const user = req.user;
-    sendResponse(res, 200, false, "fetched profile successfully", user);
+    return sendResponse(res, 200, false, "fetched profile successfully", user);
   } catch (error) {
-    sendResponse(res, 400, false, error.message);
+    return sendResponse(res, 400, false, error.message);
   }
 };
 
@@ -23,10 +23,10 @@ exports.editProfile = async (req, res) => {
       { $set: user },
       { new: true, runValidators: true }
     );
-    sendResponse(res, 200, true, "profile updated successfully");
+    return sendResponse(res, 200, true, "profile updated successfully");
     res.send(updateUser);
   } catch (error) {
-    sendResponse(res, 400, false, error.message);
+    return sendResponse(res, 400, false, error.message);
   }
 };
 
@@ -36,15 +36,15 @@ exports.changePassword = async (req, res) => {
     const { password, id } = req.user;
     const isOldPasswordCorrect = await bcrypt.compare(oldPassword, password);
     if (!isOldPasswordCorrect) {
-      sendResponse(res, 404, false, "Old Password is not correct");
+      return sendResponse(res, 404, false, "Old Password is not correct");
     }
     if (oldPassword === newPassword) {
       throw new Error("Old Password passwords cannot be same");
     }
     const hashpassowrd = await bcrypt.hash(newPassword, 10);
     await User.findByIdAndUpdate(id, { password: hashpassowrd });
-    sendResponse(res, 200, true, "password updated succesfully");
+    return sendResponse(res, 200, true, "password updated succesfully");
   } catch (error) {
-    sendResponse(res, 400, false, error.message);
+    return sendResponse(res, 400, false, error.message);
   }
 };

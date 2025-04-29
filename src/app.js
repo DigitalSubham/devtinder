@@ -27,7 +27,7 @@ app.use("/", requestsRouter);
 app.use("/", userRouter);
 
 app.use("/test", (req, res) => {
-  sendResponse(res, 200, true, "Hello from Server");
+  return sendResponse(res, 200, true, "Hello from Server");
 });
 
 connectDb()

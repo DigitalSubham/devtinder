@@ -26,10 +26,10 @@ exports.signUp = async (req, res) => {
       expires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
     });
 
-    sendResponse(res, 200, true, "User created successfully", token);
+    return sendResponse(res, 200, true, "User created successfully", token);
   } catch (error) {
     console.error("Signup Error:", error);
-    sendResponse(res, 500, false, "Internal Server Error");
+    return sendResponse(res, 500, false, "Internal Server Error");
   }
 };
 
@@ -39,7 +39,7 @@ exports.login = async (req, res) => {
 
     const user = await User.findOne({ email: email });
     if (!user) {
-      sendResponse(res, 404, false, "Email not Found");
+      return sendResponse(res, 404, false, "Email not Found");
     }
     const isPassword = await bcrypt.compare(password, user.password);
     if (isPassword) {
@@ -47,12 +47,12 @@ exports.login = async (req, res) => {
       res.cookie("token", token, {
         expires: new Date(Date.now() + 900000),
       });
-      sendResponse(res, 200, true, "login successful done", user);
+      return sendResponse(res, 200, true, "login successful done", user);
     } else {
-      throw new Error("Invalid Credentials");
+      return sendResponse(res, 404, false, "Invalid Credentials");
     }
   } catch (error) {
-    sendResponse(res, 404, false, "error.message");
+    return sendResponse(res, 404, false, "error.message");
   }
 };
 
@@ -60,5 +60,5 @@ exports.logout = async (req, res) => {
   res.cookie("token", null, {
     expires: new Date(Date.now()),
   });
-  sendResponse(res, 200, true, "Logout successful");
+  return sendResponse(res, 200, true, "Logout successful");
 };

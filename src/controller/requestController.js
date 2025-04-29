@@ -15,12 +15,12 @@ exports.sendRequest = async (req, res) => {
     //     });
     //   }
     if (!acceptedRequest.includes(status)) {
-      sendResponse(res, 400, false, "Invalid status type");
+      return sendResponse(res, 400, false, "Invalid status type");
     }
 
     const findUser = await User.findById(toUserId);
     if (!findUser) {
-      sendResponse(res, 400, false, "User not found");
+      return sendResponse(res, 400, false, "User not found");
     }
 
     const existingConnectionRequest = await ConnectionRequestModel.findOne({
@@ -42,9 +42,15 @@ exports.sendRequest = async (req, res) => {
       status,
     });
     const data = await connectionRequest.save();
-    sendResponse(res, 200, true, "connection request send succesfully", data);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "connection request send succesfully",
+      data
+    );
   } catch (error) {
-    sendResponse(res, 400, false, error.message);
+    return sendResponse(res, 400, false, error.message);
   }
 };
 
@@ -55,7 +61,7 @@ exports.recievedRequest = async (req, res) => {
     const allowedStatus = ["accepted", "rejected"];
 
     if (!allowedStatus.includes(status)) {
-      sendResponse(res, 404, false, "Invalid Status");
+      return sendResponse(res, 404, false, "Invalid Status");
     }
 
     const connectionReq = await ConnectionRequestModel.findOne({
@@ -65,13 +71,13 @@ exports.recievedRequest = async (req, res) => {
     });
 
     if (!connectionReq) {
-      sendResponse(res, 400, false, "connection req not found");
+      return sendResponse(res, 400, false, "connection req not found");
     }
 
     connectionReq.status = status;
     const data = await connectionReq.save();
-    sendResponse(res, 200, true, `request ${status} succesfully`, data);
+    return sendResponse(res, 200, true, `request ${status} succesfully`, data);
   } catch (error) {
-    sendResponse(res, 400, false, error.message);
+    return sendResponse(res, 400, false, error.message);
   }
 };

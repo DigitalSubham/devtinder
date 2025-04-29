@@ -21,9 +21,15 @@ exports.userConnections = async (req, res) => {
         return row.fromUserId;
       }
     });
-    sendResponse(res, 200, true, "connections fetched succesfully", data);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "connections fetched succesfully",
+      data
+    );
   } catch (error) {
-    sendResponse(res, 400, false, error.message);
+    return sendResponse(res, 400, false, error.message);
   }
 };
 
@@ -35,9 +41,15 @@ exports.requestRecievedList = async (req, res) => {
       status: "interested",
     }).populate("fromUserId", "");
 
-    sendResponse(res, 200, true, "data fetched succesfully", connectionRequest);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "data fetched succesfully",
+      connectionRequest
+    );
   } catch (error) {
-    sendResponse(res, 400, false, error.message);
+    return sendResponse(res, 400, false, error.message);
   }
 };
 
@@ -67,9 +79,9 @@ exports.feedList = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(limit);
 
-    sendResponse(res, 200, true, "data fetched succesfully", users);
+    return sendResponse(res, 200, true, "data fetched succesfully", users);
     res.send(users);
   } catch (error) {
-    sendResponse(res, 400, false, error.message);
+    return sendResponse(res, 400, false, error.message);
   }
 };
