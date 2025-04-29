@@ -21,6 +21,8 @@ const profileRouter = require("./routes/profile");
 const requestsRouter = require("./routes/requests");
 const { sendResponse } = require("../utils/sendResponse");
 
+const portNo = process.env.PORT || 4000;
+
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestsRouter);
@@ -33,8 +35,8 @@ app.use("/test", (req, res) => {
 connectDb()
   .then(() => {
     console.log("database connection successful");
-    app.listen(process.env.PORT, () => {
-      console.log(`Server is started at ${process.env.PORT}`);
+    app.listen(portNo, () => {
+      console.log(`Server is started at ${portNo}`);
     });
   })
   .catch((err) => console.log(err));
