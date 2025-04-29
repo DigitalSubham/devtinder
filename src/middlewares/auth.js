@@ -1,11 +1,12 @@
 var jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const { sendResponse } = require("../../utils/sendResponse");
 
 const userAuth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
     if (!token) {
-      return res.status(401).send({ message: "Please Login" });
+      return sendResponse(res, 401, false, "Please Login First");
     }
 
     const { _id } = await jwt.verify(token, "Subham@123");
@@ -15,13 +16,13 @@ const userAuth = async (req, res, next) => {
 
     const user = await User.findById(_id);
     if (!user) {
-      throw new Error("User not Found");
+      return sendResponse(res, 404, false, "User not Found");
     } else {
       req.user = user;
       next();
     }
   } catch (error) {
-    res.status(400).send(error.message);
+    return sendResponse(res, 400, false, error.message);
   }
 };
 
