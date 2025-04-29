@@ -1,16 +1,17 @@
+const { sendResponse } = require("../../utils/sendResponse");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 
-export const viewProfile = async (requestAnimationFrame, res) => {
+exports.viewProfile = async (req, res) => {
   try {
     const user = req.user;
-    res.send(user);
+    sendResponse(res, 200, false, "fetched profile successfully", user);
   } catch (error) {
-    res.status(400).send(error.message);
+    sendResponse(res, 400, false, error.message);
   }
 };
 
-export const editProfile = async (req, res) => {
+exports.editProfile = async (req, res) => {
   try {
     const userId = req.user._id;
     const user = req.body;
@@ -22,27 +23,28 @@ export const editProfile = async (req, res) => {
       { $set: user },
       { new: true, runValidators: true }
     );
+    sendResponse(res, 200, true, "profile updated successfully");
     res.send(updateUser);
   } catch (error) {
-    res.status(400).send(error.message);
+    sendResponse(res, 400, false, error.message);
   }
 };
 
-export const changePassword = async (req, res) => {
+exports.changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
     const { password, id } = req.user;
     const isOldPasswordCorrect = await bcrypt.compare(oldPassword, password);
     if (!isOldPasswordCorrect) {
-      throw new Error("Old Password is not correct");
+      sendResponse(res, 404, false, "Old Password is not correct");
     }
     if (oldPassword === newPassword) {
       throw new Error("Old Password passwords cannot be same");
     }
     const hashpassowrd = await bcrypt.hash(newPassword, 10);
     await User.findByIdAndUpdate(id, { password: hashpassowrd });
-    res.send("password updated succesfully");
+    sendResponse(res, 200, true, "password updated succesfully");
   } catch (error) {
-    res.status(400).send(error.message);
+    sendResponse(res, 400, false, error.message);
   }
 };

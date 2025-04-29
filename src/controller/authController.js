@@ -1,30 +1,45 @@
-const User = require("../models/user");
+const { sendResponse } = require("../../utils/sendResponse.js");
+const User = require("../models/user.js");
 const bcrypt = require("bcrypt");
 
-export const signUp = async (req, res) => {
-  const { password, ...userObj } = req.body;
+exports.signUp = async (req, res) => {
+  try {
+    const { password, ...userData } = req.body;
 
-  let hashPassword;
-  if (password) {
-    hashPassword = await bcrypt.hash(password, 10);
+    if (!password) {
+      return sendResponse(res, 400, false, "Password is required");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      ...userData,
+      password: hashedPassword,
+    });
+
+    await newUser.save();
+
+    const token = await newUser.getJwt();
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      expires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+    });
+
+    sendResponse(res, 200, true, "User created successfully", token);
+  } catch (error) {
+    console.error("Signup Error:", error);
+    sendResponse(res, 500, false, "Internal Server Error");
   }
-  const user = new user({ ...userObj, password: hashPassword });
-  await user.save();
-  const token = await user.getJwt();
-  res.cookie("token", token, {
-    expires: new Date(Date.now() + 900000),
-  });
-
-  res.send("data added successful");
 };
 
-export const login = async (req, res) => {
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email: email });
     if (!user) {
-      throw new Error("Email not Found");
+      sendResponse(res, 404, false, "Email not Found");
     }
     const isPassword = await bcrypt.compare(password, user.password);
     if (isPassword) {
@@ -32,19 +47,18 @@ export const login = async (req, res) => {
       res.cookie("token", token, {
         expires: new Date(Date.now() + 900000),
       });
-      res.send({ user: user, message: "login successful done" });
+      sendResponse(res, 200, true, "login successful done", user);
     } else {
       throw new Error("Invalid Credentials");
     }
   } catch (error) {
-    res.status(400).send(error.message);
+    sendResponse(res, 404, false, "error.message");
   }
 };
 
-export const logout = async (req, res) => {
-  res
-    .cookie("token", null, {
-      expires: new Date(Date.now()),
-    })
-    .send("Logout successful");
+exports.logout = async (req, res) => {
+  res.cookie("token", null, {
+    expires: new Date(Date.now()),
+  });
+  sendResponse(res, 200, true, "Logout successful");
 };

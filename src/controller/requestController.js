@@ -1,7 +1,8 @@
 const ConnectionRequestModel = require("../models/connectionRequest");
 const User = require("../models/user");
+const { sendResponse } = require("../../utils/sendResponse");
 
-export const sendRequest = async (req, res) => {
+exports.sendRequest = async (req, res) => {
   try {
     const fromUserId = req.user._id;
     const toUserId = req.params.toUserId;
@@ -14,16 +15,12 @@ export const sendRequest = async (req, res) => {
     //     });
     //   }
     if (!acceptedRequest.includes(status)) {
-      return res.status(400).json({
-        message: "Invalid status type",
-      });
+      sendResponse(res, 400, false, "Invalid status type");
     }
 
     const findUser = await User.findById(toUserId);
     if (!findUser) {
-      return res.status(400).json({
-        message: "User not found",
-      });
+      sendResponse(res, 400, false, "User not found");
     }
 
     const existingConnectionRequest = await ConnectionRequestModel.findOne({
@@ -45,23 +42,20 @@ export const sendRequest = async (req, res) => {
       status,
     });
     const data = await connectionRequest.save();
-    res.json({
-      message: "connection request send succesfully",
-      data: data,
-    });
+    sendResponse(res, 200, true, "connection request send succesfully", data);
   } catch (error) {
-    res.status(400).send(error.message);
+    sendResponse(res, 400, false, error.message);
   }
 };
 
-export const recievedRequest = async (req, res) => {
+exports.recievedRequest = async (req, res) => {
   try {
     const loggedInUser = req.user;
     const { status, requestId } = req.params;
     const allowedStatus = ["accepted", "rejected"];
 
     if (!allowedStatus.includes(status)) {
-      return res.status(400).json({ message: "Invalid Status" });
+      sendResponse(res, 404, false, "Invalid Status");
     }
 
     const connectionReq = await ConnectionRequestModel.findOne({
@@ -71,13 +65,13 @@ export const recievedRequest = async (req, res) => {
     });
 
     if (!connectionReq) {
-      return res.status(404).json({ message: "connection req not found" });
+      sendResponse(res, 400, false, "connection req not found");
     }
 
     connectionReq.status = status;
     const data = await connectionReq.save();
-    res.json({ message: "" });
+    sendResponse(res, 200, true, `request ${status} succesfully`, data);
   } catch (error) {
-    res.status(400).send(error.message);
+    sendResponse(res, 400, false, error.message);
   }
 };

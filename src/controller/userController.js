@@ -1,7 +1,8 @@
+const { sendResponse } = require("../../utils/sendResponse");
 const ConnectionRequestModel = require("../models/connectionRequest");
 const User = require("../models/user");
 
-export const userConnections = async (req, res) => {
+exports.userConnections = async (req, res) => {
   try {
     const loggedInUser = req.user;
     const connectionRequest = await ConnectionRequestModel.find({
@@ -20,11 +21,13 @@ export const userConnections = async (req, res) => {
         return row.fromUserId;
       }
     });
-    res.send(data);
-  } catch (error) {}
+    sendResponse(res, 200, true, "connections fetched succesfully", data);
+  } catch (error) {
+    sendResponse(res, 400, false, error.message);
+  }
 };
 
-export const requestRecievedList = async (req, res) => {
+exports.requestRecievedList = async (req, res) => {
   try {
     const loggedInUser = req.user;
     const connectionRequest = await ConnectionRequestModel.find({
@@ -32,12 +35,13 @@ export const requestRecievedList = async (req, res) => {
       status: "interested",
     }).populate("fromUserId", "");
 
-    // console.log("connectionRequest", connectionRequest, loggedInUser);
-    res.send(connectionRequest);
-  } catch (error) {}
+    sendResponse(res, 200, true, "data fetched succesfully", connectionRequest);
+  } catch (error) {
+    sendResponse(res, 400, false, error.message);
+  }
 };
 
-export const feedList = async (req, res) => {
+exports.feedList = async (req, res) => {
   try {
     const loggedInUser = req.user;
     const limit = req.query.limit || 10;
@@ -62,8 +66,10 @@ export const feedList = async (req, res) => {
     })
       .skip((page - 1) * limit)
       .limit(limit);
+
+    sendResponse(res, 200, true, "data fetched succesfully", users);
     res.send(users);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    sendResponse(res, 400, false, error.message);
   }
 };
